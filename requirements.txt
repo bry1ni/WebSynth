@@ -1,5 +1,5 @@
 crawl4ai
-google-generativeai
 python-dotenv
 langchain
 streamlit
+langchain-google-vertexai

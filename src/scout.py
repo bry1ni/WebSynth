@@ -1,15 +1,15 @@
 import asyncio
-from crawl4ai import AsyncWebCrawler, CacheMode
-
-import google.generativeai as genai
-import os
+from crawl4ai import AsyncWebCrawler
 from dotenv import load_dotenv
-from langchain.output_parsers.json import SimpleJsonOutputParser
+from langchain.prompts import PromptTemplate
+from langchain.chains import LLMChain
 
 load_dotenv()
 
-def generate_url(query: str, json_parser, model) -> str:
-    prompt = """
+def generate_url(query: str, json_parser, model) -> dict:
+    prompt_template = PromptTemplate(
+        input_variables=["query"],
+        template="""
             You are an advanced web research specialist tasked with generating a list of highly relevant, credible URLs for conducting comprehensive research on a given topic. Your goal is to provide a diverse set of authoritative sources that cover different angles and perspectives.
 
             RESEARCH URL GENERATION INSTRUCTIONS:
@@ -46,32 +46,38 @@ def generate_url(query: str, json_parser, model) -> str:
 
             RESEARCH TOPIC: {query}
         """
+    )
     
-    formatted_prompt = prompt.format(query=query)
-
-    response = model.generate_content(formatted_prompt)
-
-    jasonified_response = json_parser.parse(response.text)
+    research_chain = LLMChain(
+        llm=model,
+        prompt=prompt_template,
+        output_parser=json_parser
+    )
+    
+    response = research_chain.run(query=query)
+    jasonified_response = json_parser.parse(response)
 
     return jasonified_response
 
-
-
-async def main():
+async def crawlURL(url):
     async with AsyncWebCrawler(verbose=True) as crawler:
-        result = await crawler.arun(url="https://www.nbcnews.com/business")
-        # Soone will be change to result.markdown
-        print(result.markdown_v2.raw_markdown) 
+        try:
+            result = await crawler.arun(url=url)
+            return result.markdown_v2.raw_markdown
+        except Exception as e:
+            print(f"Error scraping {url}: {e}")
+            return None
 
-if __name__ == "__main__":
-    #asyncio.run(main())
-    # LLM = GIMINI 1.5
-    GEMINI_API_KEY = os.getenv("GOOGLE_API_KEY")
-    genai.configure(api_key=GEMINI_API_KEY)
-    model = genai.GenerativeModel(model_name="gemini-1.5-flash")
+async def scrape_and_save(urls):
+    tasks = [crawlURL(url) for url in urls]
+    results = await asyncio.gather(*tasks)
 
-    # JSON Parser
-    json_parser = SimpleJsonOutputParser()
-    results = generate_url("Latest automotive technology innovations in 2024", json_parser=json_parser, model=model)
-    urls = list(map(lambda x: x['url'], results['research_urls']))
-    print(urls)
+    with open("knowledgeBase.md", "a") as f:
+        for url, content in zip(urls, results):
+            if content:
+                f.write(f"# Source: {url}\n")
+                f.write(content)
+                f.write("\n\n")
+            else:
+                f.write(f"# Source: {url}\n")
+                f.write("Failed to retrieve content.\n\n")
