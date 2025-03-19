@@ -1,5 +1,6 @@
 crawl4ai
+firecrawl-py
+tavily_python
 python-dotenv
-langchain
+agno
 streamlit
-langchain-google-vertexai
