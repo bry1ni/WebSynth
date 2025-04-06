@@ -2,7 +2,7 @@ import streamlit as st
 import random
 import time
 
-from src.agent import get_bot_response
+from src.mdl.agent.agent import get_bot_response
 
 # Set page configuration
 st.set_page_config(page_title="WebSynth", page_icon="🤖")
@@ -41,10 +41,7 @@ if user_input:
         # Get bot response with streaming enabled
         try:
             # Generate bot response with streaming
-            for chunk in get_bot_response(user_input, stream=True):
-                full_response += chunk
-                message_placeholder.markdown(full_response + "▌")
-                time.sleep(0.01)  # Small delay for visual effect
+            full_response = get_bot_response(user_input)
             
             # Final display without cursor
             message_placeholder.markdown(full_response)

@@ -1,12 +1,12 @@
 from agno.agent import Agent
-from src import GPT4, TOOLS, ZBOT_INSTRUCTION
-from src.utils import extract_response_from_agent
+from src.mdl.agent import GPT4, TOOLS, INSTRUCTION
+from src.mdl.agent.utils import extract_response_from_agent
 
 
 web_synth = Agent(
-    name="zbot",
+    name="web_synth",
     model=GPT4,
-    instructions=ZBOT_INSTRUCTION,
+    instructions=INSTRUCTION,
     tools=TOOLS,
     markdown=True
 )
@@ -15,7 +15,7 @@ web_synth = Agent(
 def get_bot_response(user_input):
     result = web_synth.run(
         user_input,
-        stream=True
+        stream=False
         )
     
     response = extract_response_from_agent(result)
