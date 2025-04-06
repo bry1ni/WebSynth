@@ -7,8 +7,7 @@ requires-python = ">=3.12"
 dependencies = [
     "agno>=1.2.11",
     "crawl4ai>=0.5.0.post8",
-    "firecrawl-py>=1.15.0",
+    "duckduckgo-search>=2025.4.4",
     "python-dotenv>=1.1.0",
     "streamlit>=1.44.1",
-    "tavily-python>=0.5.4",
 ]

@@ -1,6 +1,5 @@
 crawl4ai
-firecrawl-py
-tavily_python
 python-dotenv
 agno
 streamlit
+duckduckgo-search
